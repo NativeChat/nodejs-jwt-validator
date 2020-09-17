@@ -1,12 +1,13 @@
 export interface IJwtValidatorConfig {
     issuerUrl: string;
-    clientId: string;
+    clientId?: string;
     tokenUse?: string;
 }
 
 export interface IClaim {
     auth_time: number;
     iss: string;
+    aud: string;
     exp: number;
     username: string;
     client_id: string;
@@ -19,9 +20,10 @@ export interface IEmailClaim {
 }
 
 export interface IValidationOptions {
-    validateExp: boolean;
-    validateIss: boolean;
-    validateTokenUse: boolean;
+    validateExp?: boolean;
+    validateIss?: boolean;
+    validateAud?: boolean;
+    validateTokenUse?: boolean;
 }
 
 export interface IValidateTokenResult<T> {

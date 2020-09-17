@@ -23,7 +23,7 @@ export class JwtValidator {
         private config: IJwtValidatorConfig,
         validationOptions?: IValidationOptions,
     ) {
-        this.validationOptions = Object.assign(DefaultValidationOptions, validationOptions || {});
+        this.validationOptions = Object.assign({}, DefaultValidationOptions, validationOptions || {});
     }
 
     public async validateToken<T>(token: string): Promise<IValidateTokenResult<T>> {
@@ -52,6 +52,10 @@ export class JwtValidator {
                 throw new Error("claim issuer is invalid");
             }
 
+            if (this.validationOptions.validateAud && claim.aud !== this.config.clientId) {
+                throw new Error("claim aud is invalid");
+            }
+
             if (this.validationOptions.validateTokenUse && claim.token_use !== this.config.tokenUse) {
                 throw new Error(`claim use is not ${this.config.tokenUse}`);
             }
@@ -70,12 +74,12 @@ export class JwtValidator {
             const separator = this.config.issuerUrl.endsWith("/") ? "" : "/";
             const url = `${this.config.issuerUrl}${separator}.well-known/jwks.json`;
             const publicKeys = await Axios.default.get<IPublicKeys>(url);
-            this.cacheKeys = publicKeys.data.keys.reduce((agg, current) => {
+            this.cacheKeys = Object.assign(this.cacheKeys || {}, publicKeys.data.keys.reduce((agg, current) => {
                 const pem = jwkToPem(current);
                 agg[current.kid] = { instance: current, pem };
 
                 return agg;
-            }, {} as IMapOfKidToPublicKey);
+            }, {} as IMapOfKidToPublicKey));
         }
 
         return this.cacheKeys;

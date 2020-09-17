@@ -4,4 +4,5 @@ export const DefaultValidationOptions: IValidationOptions = {
     validateExp: true,
     validateIss: true,
     validateTokenUse: true,
+    validateAud: true,
 };

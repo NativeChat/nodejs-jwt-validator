@@ -33,7 +33,7 @@ const expectError = (result: IValidateTokenResult<IEmailClaim>, errorMessage: st
 describe("JwtValidator", () => {
     describe("validateToken", () => {
         it("should validate token.", async () => {
-            const validator = new JwtValidator(getDefaultConfig(), { validateExp: false, validateIss: true, validateTokenUse: false });
+            const validator = new JwtValidator(getDefaultConfig(), { validateExp: false, validateTokenUse: false });
 
             const result = await validator.validateToken(token);
 
@@ -45,15 +45,25 @@ describe("JwtValidator", () => {
         it("should validate iss.", async () => {
             const config = getDefaultConfig();
             config.issuerUrl = "https://nchat.us.auth0.com";
-            const validator = new JwtValidator(config, { validateExp: false, validateIss: true, validateTokenUse: false });
+            const validator = new JwtValidator(config, { validateExp: false, validateTokenUse: false });
 
             const result = await validator.validateToken<IEmailClaim>(token);
 
             expectError(result, "claim issuer is invalid");
         });
 
+        it("should validate aud.", async () => {
+            const config = getDefaultConfig();
+            config.clientId = "invalid";
+            const validator = new JwtValidator(config, { validateExp: false, validateTokenUse: false });
+
+            const result = await validator.validateToken<IEmailClaim>(token);
+
+            expectError(result, "claim aud is invalid");
+        });
+
         it("should validate exp.", async () => {
-            const validator = new JwtValidator(getDefaultConfig(), { validateExp: true, validateIss: false, validateTokenUse: false });
+            const validator = new JwtValidator(getDefaultConfig(), { validateIss: false, validateTokenUse: false });
 
             const result = await validator.validateToken<IEmailClaim>(token);
 
@@ -62,14 +72,14 @@ describe("JwtValidator", () => {
 
         it("should validate token_use.", async () => {
             const config = getDefaultConfig();
-            const accessTokenValidator = new JwtValidator(config, { validateExp: false, validateIss: false, validateTokenUse: true });
+            const accessTokenValidator = new JwtValidator(config, { validateExp: false, validateIss: false });
 
             let result = await accessTokenValidator.validateToken<IEmailClaim>(token);
 
             expectError(result, "claim use is not access");
 
             config.tokenUse = "id";
-            const idTokenValidator = new JwtValidator(config, { validateExp: false, validateIss: false, validateTokenUse: true });
+            const idTokenValidator = new JwtValidator(config, { validateExp: false, validateIss: false });
 
             result = await idTokenValidator.validateToken<IEmailClaim>(token);
 
@@ -77,7 +87,7 @@ describe("JwtValidator", () => {
         });
 
         it("should validate the signature.", async () => {
-            const validator = new JwtValidator(getDefaultConfig(), { validateExp: true, validateIss: true, validateTokenUse: true });
+            const validator = new JwtValidator(getDefaultConfig(), { validateExp: true, validateIss: true });
 
             const result = await validator.validateToken<IEmailClaim>(fakeToken);
 
