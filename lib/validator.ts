@@ -15,6 +15,8 @@ import {
 } from "../declarations/declarations";
 import { DefaultValidationOptions } from "./constants";
 
+const UrlSeparator = "/";
+
 export class JwtValidator {
     private validationOptions: IValidationOptions;
     private cacheKeys?: IMapOfKidToPublicKey;
@@ -23,14 +25,14 @@ export class JwtValidator {
         private config: IJwtValidatorConfig,
         validationOptions?: IValidationOptions,
     ) {
-        this.validationOptions = Object.assign({}, DefaultValidationOptions, validationOptions || {});
+        this.validationOptions = Object.assign({}, DefaultValidationOptions, validationOptions);
     }
 
     public async validateToken<T>(token: string): Promise<IValidateTokenResult<T>> {
         const result: IValidateTokenResult<T> = { isValid: false };
         try {
             const tokenSections = (token || "").split(".");
-            if (tokenSections.length < 2) {
+            if (tokenSections.length !== 3) {
                 throw new Error("requested token is invalid");
             }
 
@@ -53,7 +55,7 @@ export class JwtValidator {
             }
 
             if (this.validationOptions.validateAud && claim.aud !== this.config.clientId) {
-                throw new Error("claim aud is invalid");
+                throw new Error("claim audience is invalid");
             }
 
             if (this.validationOptions.validateTokenUse && claim.token_use !== this.config.tokenUse) {
@@ -71,7 +73,7 @@ export class JwtValidator {
 
     private async getPublicKeys(): Promise<IMapOfKidToPublicKey> {
         if (!this.cacheKeys) {
-            const separator = this.config.issuerUrl.endsWith("/") ? "" : "/";
+            const separator = this.config.issuerUrl.endsWith(UrlSeparator) ? "" : UrlSeparator;
             const url = `${this.config.issuerUrl}${separator}.well-known/jwks.json`;
             const publicKeys = await Axios.default.get<IPublicKeys>(url);
             this.cacheKeys = Object.assign(this.cacheKeys || {}, publicKeys.data.keys.reduce((agg, current) => {

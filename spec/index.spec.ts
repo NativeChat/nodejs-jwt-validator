@@ -1,6 +1,7 @@
 import { JwtValidator } from "../lib/validator";
 import { IJwtValidatorConfig, IValidateTokenResult, IEmailClaim } from "../declarations/declarations";
 
+const invalidFormatToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkNQQnEyOEFFdkl2VkpwdjNad1dUYyJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ";
 const fakeToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkNQQnEyOEFFdkl2VkpwdjNad1dUYyJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.Tq0NGS79P8COkfcVN8yXRjL-bHdgC40I4P2NIaW9ZrGDCGqDzuaVNGqPFZ9E8QUYhr_5XVMSAyzd5WSpeWjr3t4-c9NUPH-BXzMm89SKaY2lZpfio9-I3HK82sjBojSwDNUOjS_N9XS6wL6itNKR1xZVp5O9iLfbW3BevWh7HLwvzG-VQugVUald8kaHmlN01lLQcGvKIs-D1-5MRINW_1cXyO-XUVdxx1Ar4MURDToeLifhujuY3YHrbug2IB6XkgA67L_-2-0Ixyis-QICiR8Nrtly2f5ReDv7a_mlDBkW0cgrhSHthTZ5lhpbV_HSby654PNFnCONLW7setKyfQ";
 const token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkNQQnEyOEFFdkl2VkpwdjNad1dUYyJ9.eyJuaWNrbmFtZSI6Im9zcyIsIm5hbWUiOiJvc3NAbmNoYXQuY29tIiwicGljdHVyZSI6Imh0dHBzOi8vcy5ncmF2YXRhci5jb20vYXZhdGFyL2Y5ZTc4MzUwMTlmMWVjYThlNDYzNTdjNmI5YzljMjIzP3M9NDgwJnI9cGcmZD1odHRwcyUzQSUyRiUyRmNkbi5hdXRoMC5jb20lMkZhdmF0YXJzJTJGb3MucG5nIiwidXBkYXRlZF9hdCI6IjIwMjAtMDktMTJUMTI6MjI6NDIuNDEyWiIsImVtYWlsIjoib3NzQG5jaGF0LmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJpc3MiOiJodHRwczovL25jaGF0LnVzLmF1dGgwLmNvbS8iLCJzdWIiOiJhdXRoMHw1ZjVjOWFkZjFkODBiMTAwNzhlNWRjY2IiLCJhdWQiOiJBcUcwV1ZTWWY3eDMzalhFZDBnM25McmpXY3R2cnY3WSIsImlhdCI6MTU5OTkxNzYxOSwiZXhwIjoxNTk5OTUzNjE5LCJub25jZSI6IjBiTnFuYS5Qb1hqOTBaZGFDZFkzT3lna0VyN2JKZlZHRTV2dW5wXy1fb2gifQ.F0oa69MYLti4doMLDbHRyVW8No4AgcMaM_R58q5QLBg9g7LMlY9cUCNrKhP1R0Bl4T_Y5Wvu9lJ_tSH2s2OGHLCfngCucTJXpjVhX4YCzFR0EH4Wr4ZUQC_iRT5tFEVynENkVfiXmVMWC3swe7EKdLnJfTpKx1jh3qK1XEZpFENEdNtlJT3r8MBAh89AHZ2wncyCKS8t6Gu9jtH3ORmGH6-sxCfrzjalwARC2r_ACWK5dYkKQmlsMwwmIT_yPW0YjGfOXPGcF5rrAG2Ok-Avy9h4jiSdvpjv1yaxSfka8TUPckBbzDNYEfmzN395kYGOlEVK5xW1wCUCG3lYag6k3g";
 const payload = {
@@ -19,7 +20,7 @@ const payload = {
 };
 
 const getDefaultConfig = (): IJwtValidatorConfig => {
-    const config: IJwtValidatorConfig = { issuerUrl: "https://nchat.us.auth0.com/", clientId: "AqG0WVSYf7x33jXEd0g3nLrjWctvrv7Y", tokenUse: "access" };
+    const config: IJwtValidatorConfig = { issuerUrl: payload.iss, clientId: payload.aud, tokenUse: "access" };
 
     return config;
 };
@@ -42,9 +43,17 @@ describe("JwtValidator", () => {
             expect(result.claim).toEqual(payload as any);
         });
 
+        it("should validate token format.", async () => {
+            const validator = new JwtValidator(getDefaultConfig());
+
+            const result = await validator.validateToken<IEmailClaim>(invalidFormatToken);
+
+            expectError(result, "requested token is invalid");
+        });
+
         it("should validate iss.", async () => {
             const config = getDefaultConfig();
-            config.issuerUrl = "https://nchat.us.auth0.com";
+            config.issuerUrl = config.issuerUrl.slice(0, -1);
             const validator = new JwtValidator(config, { validateExp: false, validateTokenUse: false });
 
             const result = await validator.validateToken<IEmailClaim>(token);
@@ -59,7 +68,7 @@ describe("JwtValidator", () => {
 
             const result = await validator.validateToken<IEmailClaim>(token);
 
-            expectError(result, "claim aud is invalid");
+            expectError(result, "claim audience is invalid");
         });
 
         it("should validate exp.", async () => {
