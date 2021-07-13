@@ -1,0 +1,34 @@
+name: veracode-scan
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  scan:
+    environment: veracode-env
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+      - run: npm run security-pack
+      - name: set tgz name
+        id: vars
+        run: echo "::set-output name=file_to_upload::$(ls | grep tgz)"
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '8'
+      - uses: veracode/veracode-uploadandscan-action@master
+        with:
+          appname: '${{ github.repository_owner }}'
+          createprofile: false
+          filepath: ${{ steps.vars.outputs.file_to_upload }}
+          vid: '${{ secrets.VERACODE_API_ID }}'
+          vkey: '${{ secrets.VERACODE_API_KEY }}'
+          createsandbox: 'true'
+          sandboxname: '${{ github.repository }}'
+          scantimeout: 15
+          criticality: 'VeryHigh'
