@@ -1,0 +1,67 @@
+name: release
+on:
+  push:
+    branches: [master]
+
+jobs:
+  release:
+    environment: npm-env
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+      - name: Create Tag
+        id:  create_tag
+        run: |
+          set -e;
+          set -x;
+
+          tag="v$(node -p "require('./package').version")";
+          git fetch --all;
+
+          if git rev-parse $tag > /dev/null 2>&1;
+          then
+              echo "The current tag is already released";
+          else
+              git config --global user.email github-actions
+              git config --global user.name github-actions
+              message=$(git log -1 --pretty=format:%s)
+              git tag -a $tag -m "$message";
+              git push origin --tags;
+              npm config set '//registry.npmjs.org/:_authToken' '${{ secrets.NPM_TOKEN }}'
+              npm publish;
+
+              echo "::set-output name=tag::$tag"
+          fi
+      - name: Changelog
+        if: ${{ steps.create_tag.outputs.tag }}
+        id: changelog
+        run: |
+          npm install -g generate-changelog
+          previous_tag=$(git tag --sort version:refname | tail -n 2 | head -n 1)
+          new_tag=$(git tag --sort version:refname | tail -n 1)
+
+          changelog=$(generate-changelog -t "$previous_tag..$new_tag" --file -)
+          changelog="${changelog//'%'/'%25'}"
+          changelog="${changelog//$'\n'/'%0A'}"
+          changelog="${changelog//$'\r'/'%0D'}"
+
+          echo "$changelog"
+
+          echo "::set-output name=changelog::$changelog"
+      - name: Create Release
+        if: ${{ steps.create_tag.outputs.tag }}
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.create_tag.outputs.tag }}
+          release_name: ${{ steps.create_tag.outputs.tag }}
+          body: |
+            ${{ steps.Changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
