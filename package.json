@@ -8,7 +8,8 @@
     "lint": "tslint --project .",
     "lint-fix": "tslint --project . --fix",
     "test": "jasmine",
-    "prepack": "npm run build"
+    "prepack": "npm run build",
+    "security-pack": "tar zcvf nodejs-jwt-validator.tgz --exclude='./node_modules' --exclude='*.js' --exclude='*.js.map' --exclude='.git' --exclude='coverage' --exclude='reports' --exclude='.vscode' --exclude='*.tgz' *"
   },
   "repository": {
     "type": "git",
