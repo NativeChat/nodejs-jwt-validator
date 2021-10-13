@@ -12,9 +12,9 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14.x'
+          node-version: "14.x"
       - name: Create Tag
-        id:  create_tag
+        id: create_tag
         run: |
           set -e;
           set -x;
@@ -32,6 +32,7 @@ jobs:
               git tag -a $tag -m "$message";
               git push origin --tags;
               npm config set '//registry.npmjs.org/:_authToken' '${{ secrets.NPM_TOKEN }}'
+              npm install;
               npm publish;
 
               echo "::set-output name=tag::$tag"
