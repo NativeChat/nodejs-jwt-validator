@@ -13,22 +13,40 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
-          node-version: '14.x'
+          node-version: "14.x"
       - run: npm run security-pack
-      - name: set tgz name
+      - name: set vars name
         id: vars
-        run: echo "::set-output name=file_to_upload::$(ls | grep tgz)"
+        run: |
+          echo "::set-output name=file_to_upload::$(ls | grep tgz)"
+          echo "::set-output name=veracode_app_name::NChat-NChat-tools-and-libraries"
+          full_repo_name=${{ github.repository }}
+          repo_name=$(echo ${full_repo_name##*/})
+          echo "::set-output name=repo_name::$repo_name"
+      - name: Set sandbox name
+        id: set_sandbox_name
+        run: echo "::set-output name=veracode_sandbox_name::${{ steps.vars.outputs.veracode_app_name }}-${{ steps.vars.outputs.repo_name }}-1.0.0"
+      - name: Set build version
+        id: set_build_version
+        run: |
+          if [ $GITHUB_EVENT_NAME == 'pull_request' ]
+          then
+            echo "::set-output name=veracode_build_version::${{ steps.set_sandbox_name.outputs.veracode_sandbox_name }}.PR-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+          else
+            echo "::set-output name=veracode_build_version::${{ steps.set_sandbox_name.outputs.veracode_sandbox_name }}.${{ github.ref_name }}-${{ github.run_number }}-${{ github.run_attempt }}"
+          fi
       - uses: actions/setup-java@v1
         with:
-          java-version: '8'
+          java-version: "8"
       - uses: veracode/veracode-uploadandscan-action@master
         with:
-          appname: 'NativeChat'
+          appname: "NativeChat" # ${{ steps.vars.outputs.veracode_app_name }}
           createprofile: false
           filepath: ${{ steps.vars.outputs.file_to_upload }}
-          vid: '${{ secrets.VERACODE_API_ID }}'
-          vkey: '${{ secrets.VERACODE_API_KEY }}'
-          createsandbox: 'true'
-          sandboxname: '${{ github.repository }}'
+          vid: "${{ secrets.VERACODE_API_ID }}"
+          vkey: "${{ secrets.VERACODE_API_KEY }}"
+          createsandbox: "true"
+          sandboxname: ${{ steps.set_sandbox_name.outputs.veracode_sandbox_name }}
+          version: ${{ steps.set_build_version.outputs.veracode_build_version }}
           scantimeout: 15
-          criticality: 'VeryHigh'
+          criticality: "VeryHigh"
