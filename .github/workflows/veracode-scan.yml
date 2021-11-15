@@ -40,7 +40,7 @@ jobs:
           java-version: "8"
       - uses: veracode/veracode-uploadandscan-action@master
         with:
-          appname: "NativeChat" # ${{ steps.vars.outputs.veracode_app_name }}
+          appname: ${{ steps.vars.outputs.veracode_app_name }}
           createprofile: false
           filepath: ${{ steps.vars.outputs.file_to_upload }}
           vid: "${{ secrets.VERACODE_API_ID }}"
