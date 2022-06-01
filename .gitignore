@@ -117,6 +117,7 @@ dist
 reports
 scratch
 *.js
+!/.eslintrc.js
 *.js.map
 *.d.ts
 !declarations/**/*.d.ts
