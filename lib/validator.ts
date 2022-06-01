@@ -1,7 +1,6 @@
 import * as Axios from "axios";
 import { verify } from "jsonwebtoken";
 
-// tslint:disable-next-line:no-var-requires
 const jwkToPem = require("jwk-to-pem");
 
 import {
