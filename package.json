@@ -1,6 +1,6 @@
 {
   "name": "nodejs-jwt-validator",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "NodeJS module which validates the signature and the claims of a JWT.",
   "main": "index.js",
   "scripts": {
@@ -25,13 +25,13 @@
   "devDependencies": {
     "@types/jasmine": "3.5.14",
     "@types/jsonwebtoken": "8.5.0",
-    "@types/node": "12.12.58",
-    "jasmine": "3.9.0",
+    "@types/node": "18.19.14",
+    "jasmine": "5.1.0",
     "nchat-dev-common": "0.8.0",
-    "typescript": "4.0.2"
+    "typescript": "4.9.5"
   },
   "dependencies": {
-    "axios": "0.27.2",
+    "axios": "1.6.7",
     "jsonwebtoken": "9.0.0",
     "jwk-to-pem": "2.0.4"
   }

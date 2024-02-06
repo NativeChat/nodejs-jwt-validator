@@ -1,4 +1,4 @@
-import * as Axios from "axios";
+import axios from "axios";
 import { verify } from "jsonwebtoken";
 
 const jwkToPem = require("jwk-to-pem");
@@ -64,7 +64,7 @@ export class JwtValidator {
             result.isValid = true;
             result.claim = claim;
         } catch (err) {
-            result.error = err;
+            result.error = err as Error;
         }
 
         return result;
@@ -74,7 +74,7 @@ export class JwtValidator {
         if (!this.cacheKeys) {
             const separator = this.config.issuerUrl.endsWith(UrlSeparator) ? "" : UrlSeparator;
             const url = `${this.config.issuerUrl}${separator}.well-known/jwks.json`;
-            const publicKeys = await Axios.default.get<IPublicKeys>(url);
+            const publicKeys = await axios.get<IPublicKeys>(url);
             this.cacheKeys = Object.assign(this.cacheKeys || {}, publicKeys.data.keys.reduce((agg, current) => {
                 const pem = jwkToPem(current);
                 agg[current.kid] = { instance: current, pem };
