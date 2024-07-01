@@ -35,7 +35,7 @@ jobs:
               npm install;
               npm publish;
 
-              echo "::set-output name=tag::$tag"
+              echo "tag=$tag" >> "$GITHUB_OUTPUT"
           fi
       - name: Changelog
         if: ${{ steps.create_tag.outputs.tag }}
@@ -52,7 +52,7 @@ jobs:
 
           echo "$changelog"
 
-          echo "::set-output name=changelog::$changelog"
+          echo "changelog=$changelog" >> "$GITHUB_OUTPUT"
       - name: Create Release
         if: ${{ steps.create_tag.outputs.tag }}
         id: create_release
