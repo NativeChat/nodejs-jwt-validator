@@ -1,6 +1,6 @@
 {
   "name": "nodejs-jwt-validator",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "NodeJS module which validates the signature and the claims of a JWT.",
   "main": "index.js",
   "scripts": {
