@@ -56,5 +56,6 @@ jobs:
       - name: Create Release
         if: ${{ steps.create_tag.outputs.tag }}
         id: create_release
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release create ${{ steps.create_tag.outputs.tag }} --title "${{ steps.create_tag.outputs.tag }}" --notes "${{ steps.changelog.outputs.changelog }}"
