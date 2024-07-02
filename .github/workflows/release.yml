@@ -8,9 +8,9 @@ jobs:
     environment: npm-env
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
       - name: Use Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8
         with:
           node-version: "18.x"
       - name: Create Tag
@@ -56,7 +56,7 @@ jobs:
       - name: Create Release
         if: ${{ steps.create_tag.outputs.tag }}
         id: create_release
-        uses: actions/create-release@latest
+        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
